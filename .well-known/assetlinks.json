@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.netlify.transcendent_sherbet_9759e5.twa",
+    "sha256_cert_fingerprints": ["CC:E8:A4:AC:34:82:9D:D2:A6:C6:82:3C:86:B4:45:64:82:A3:17:35:FC:4E:96:D7:53:7F:67:5B:0B:A7:74:0E"]
+  }
+}]
