@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>موصل — مراجعة الأطباء</title>
+<style>
+:root{--brand:#0D5C53;--brand2:#15806F;--ink:#14302c;--muted:#5b6f6b;--line:#d9e4e1;--bg:#f4f8f7;--card:#fff;--ok:#1d7a46;--okb:#e5f5ec;--warn:#9a6200;--warnb:#fff4dc;--bad:#b42335;--badb:#fde8eb}
+@media (prefers-color-scheme:dark){:root{--ink:#e3efec;--muted:#9fb4af;--line:#2a3d3a;--bg:#0f1b19;--card:#152623;--okb:#173a28;--warnb:#3a2e12;--badb:#3d1a20;--ok:#5fd394;--warn:#f2b84b;--bad:#ff8a9a;--brand:#5cc2b2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+header{background:linear-gradient(135deg,#15806F,#0A4740);color:#fff;padding:16px}
+header .in{max-width:860px;margin:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:20px;margin:0;flex:1}
+header small{opacity:.85}
+main{max-width:860px;margin:auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:inherit}
+textarea{min-height:80px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 16px;cursor:pointer;background:var(--brand);color:#fff}
+.btn.ghost{background:transparent;color:var(--brand);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted);font-size:14px}
+.err{color:var(--bad);font-weight:600}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--brand2)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button{font:inherit;font-size:14px;border:1.5px solid var(--line);background:var(--card);color:inherit;border-radius:99px;padding:5px 12px;cursor:pointer}
+.seg button[aria-pressed=true]{border-color:var(--brand);color:var(--brand);font-weight:700}
+details.cond{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+details.cond>summary{cursor:pointer;padding:12px 14px;display:flex;gap:8px;align-items:center;list-style:none}
+details.cond>summary::-webkit-details-marker{display:none}
+details.cond>summary b{flex:1}
+.body{padding:0 14px 14px}
+.tag{font-size:12px;border-radius:99px;padding:2px 10px;font-weight:700;white-space:nowrap}
+.t-approved{background:var(--okb);color:var(--ok)}.t-edit{background:var(--warnb);color:var(--warn)}.t-reject{background:var(--badb);color:var(--bad)}.t-none{background:var(--line);color:var(--muted)}
+h3{font-size:15px;margin:14px 0 4px;color:var(--brand)}
+ul{margin:0;padding-inline-start:20px}
+.sym li span{color:var(--muted);font-size:13px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.acts button{flex:1;min-width:110px}
+.acts .a-ok{background:var(--ok)}.acts .a-edit{background:var(--warn)}.acts .a-rej{background:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:6px;text-align:start;vertical-align:top}
+.toast{position:fixed;bottom:16px;inset-inline:0;margin:auto;width:max-content;max-width:90%;background:#14302c;color:#fff;padding:10px 18px;border-radius:99px;opacity:0;transition:.3s}
+.toast.on{opacity:1}
+.copy{word-break:break-all;font-size:13px;direction:ltr;text-align:left;background:var(--bg);padding:8px;border-radius:8px}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>موصل — لوحة مراجعة الأطباء</h1><small id="who"></small></div></header>
+<main id="app"><div class="card">جارٍ التحميل…</div></main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+"use strict";
+// إعدادات الاتصال تأتي من الرابط نفسه (#k=...&i=...) وتُحفظ على جهاز الطبيب؛ لا مفاتيح داخل هذا الملف
+const API = "https://ufubtuzizovacieuomzp.supabase.co/rest/v1/rpc/";
+const H = new URLSearchParams(location.hash.slice(1));
+const store = { get: k => { try { return localStorage.getItem("mr_" + k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem("mr_" + k, v); } catch (e) {} } };
+for (const k of ["k", "i", "t"]) if (H.get(k)) store.set(k, H.get(k));
+const ADMIN = H.get("a");
+if (H.get("k") || H.get("i") || H.get("t")) history.replaceState(null, "", location.pathname + (ADMIN ? location.hash : ""));
+const KEY = store.get("k");
+const $ = s => document.querySelector(s), app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 2600); };
+const ERR = { invalid_invite: "رابط الدعوة غير صالح أو انتهى. اطلب رابطًا جديدًا.", invalid_token: "انتهت صلاحية دخولك على هذا الجهاز. افتح رابط الدخول الشخصي.", note_required: "اكتب التعديل المطلوب أو سبب الرفض.", not_your_specialty: "هذه الحالة ليست ضمن تخصصك.", invalid_admin: "كود الإدارة غير صحيح.", invalid_zone: "اختر التخصص." };
+async function rpc(fn, args = {}) {
+  if (!KEY) throw new Error("nokey");
+  const r = await fetch(API + fn, { method: "POST", headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify(args) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) { const m = (j && (j.message || j.hint)) || "خطأ"; throw new Error(m); }
+  return j;
+}
+const msg = e => ERR[e.message] || (e.message === "nokey" ? "افتح البرنامج من الرابط الكامل الذي أُرسل إليك." : "تعذّر الاتصال. تأكد من الإنترنت وحاول مرة أخرى.");
+const TRI = { emergency: "طوارئ فورًا", urgent: "خلال 24 ساعة", doctor: "مراجعة طبيب", home: "رعاية منزلية" };
+const ST = { approved: ["معتمد", "t-approved"], edit: ["يحتاج تعديل", "t-edit"], reject: ["مرفوض", "t-reject"] };
+
+/* ---------- تسجيل الطبيب ---------- */
+async function register() {
+  let specs = [];
+  try { specs = await rpc("list_specialties"); } catch (e) { app.innerHTML = `<div class="card err">${esc(msg(e))}</div>`; return; }
+  app.innerHTML = `<div class="card">
+    <h2 style="margin-top:0">أهلًا بك دكتورنا</h2>
+    <p>«موصل» تطبيق عربي للتوجيه الصحي يساعد المريض على معرفة التخصص المناسب ومدى الاستعجال. نرجو مراجعة الحالات الخاصة بتخصصك: الأعراض ووزن كل عرض، ومستوى الاستعجال، والفحوصات والعلاج المذكور. كل حالة تأخذ دقيقة أو دقيقتين، ويمكنك التوقف والعودة في أي وقت.</p>
+    <form id="reg">
+      <label for="r-name">الاسم كما يظهر في النقابة *</label><input id="r-name" required minlength="3" maxlength="120" autocomplete="name">
+      <label for="r-title">الدرجة العلمية</label>
+      <select id="r-title"><option>أستاذ</option><option>أستاذ مساعد</option><option>مدرس</option><option>استشاري</option><option selected>أخصائي</option><option>طبيب مقيم</option></select>
+      <label for="r-zone">التخصص الذي ستراجعه *</label>
+      <select id="r-zone" required><option value="">اختر التخصص</option>${specs.map(s => `<option value="${esc(s.key)}">${esc(s.name)} (${s.total} حالة)</option>`).join("")}</select>
+      <label for="r-syn">رقم القيد بالنقابة</label><input id="r-syn" maxlength="40" inputmode="numeric">
+      <label for="r-phone">رقم الموبايل / واتساب</label><input id="r-phone" maxlength="30" inputmode="tel" dir="ltr" autocomplete="tel">
+      <label for="r-email">البريد الإلكتروني</label><input id="r-email" type="email" maxlength="120" dir="ltr" autocomplete="email">
+      <label class="row" style="font-weight:600;margin-top:14px"><input type="checkbox" id="r-consult" style="width:auto"> أرغب في تقديم استشارات أونلاين عبر «موصل» لاحقًا</label>
+      <div id="r-cbox" hidden><label for="r-cnote">مواعيدك المناسبة وسعر الاستشارة المقترح (اختياري)</label><input id="r-cnote" maxlength="500"></div>
+      <p class="muted">بياناتك تُستخدم فقط لتوثيق المراجعة الطبية والتواصل معك، ولا تُنشر إلا باسمك ودرجتك على الحالات التي اعتمدتها وبموافقتك.</p>
+      <p id="r-err" class="err" role="alert"></p>
+      <button class="btn" type="submit">ابدأ المراجعة</button>
+    </form></div>`;
+  $("#r-consult").onchange = e => { $("#r-cbox").hidden = !e.target.checked; };
+  $("#reg").onsubmit = async e => {
+    e.preventDefault(); const b = e.submitter; b.disabled = true; $("#r-err").textContent = "";
+    try {
+      const tok = await rpc("register_reviewer", { p_invite: store.get("i") || "", p_name: $("#r-name").value, p_title: $("#r-title").value, p_syndicate: $("#r-syn").value, p_phone: $("#r-phone").value, p_email: $("#r-email").value, p_zone: $("#r-zone").value, p_consult: $("#r-consult").checked, p_consult_note: $("#r-cnote").value });
+      store.set("t", tok); review(true);
+    } catch (err) { $("#r-err").textContent = msg(err); b.disabled = false; }
+  };
+}
+
+/* ---------- المراجعة ---------- */
+let items = [], filter = "none", q = "";
+async function review(first) {
+  const t = store.get("t");
+  try {
+    const [p, list] = await Promise.all([rpc("my_profile", { p_token: t }), rpc("my_conditions", { p_token: t })]);
+    items = list; $("#who").textContent = `${p.title || ""} ${p.name} · ${p.zone_name}`;
+    if (first) filter = "none";
+    draw(p);
+    if (first) toast("أهلًا بك، ابدأ بأول حالة");
+  } catch (e) { app.innerHTML = `<div class="card err">${esc(msg(e))}</div>`; }
+}
+function li(a) { return a && a.length ? `<ul>${a.map(x => `<li>${typeof x === "string" ? esc(x) : esc(x.cls) + (x.ex ? ` — <span dir="ltr">${esc(x.ex)}</span>` : "") + (x.note ? ` <span class="muted">(${esc(x.note)})</span>` : "")}</li>`).join("")}</ul>` : `<p class="muted">—</p>`; }
+function condHtml(c) {
+  const d = c.data || {}, s = ST[c.status];
+  return `<details class="cond" data-id="${esc(c.id)}"><summary><b>${esc(c.name)}</b>${c.icd10 ? `<span class="muted" dir="ltr">${esc(c.icd10)}</span>` : ""}<span class="tag ${s ? s[1] : "t-none"}">${s ? s[0] : "لم تُراجع"}</span></summary><div class="body">
+    ${c.name_en ? `<p class="muted" dir="ltr" style="text-align:left;margin:0">${esc(c.name_en)}</p>` : ""}
+    <h3>التعريف</h3><p>${esc(d.def || "—")}</p>
+    <h3>الأعراض ووزنها في التقييم (1 ضعيف · 3 مميِّز جدًا)</h3><ul class="sym">${(d.symptoms || []).map(([l, w]) => `<li>${esc(l)} <span>— وزن ${w}</span></li>`).join("")}</ul>
+    ${d.note ? `<h3>ملاحظة تمييزية</h3><p>${esc(d.note)}</p>` : ""}
+    <h3>مستوى الاستعجال</h3><p>${esc(TRI[c.triage] || c.triage || "—")}</p>
+    <h3>العلاج (كما يظهر للمريض)</h3><p>${esc(d.treatment || "—")}</p>
+    <h3>التحاليل</h3>${li(d.tests)}<h3>الأشعة</h3>${li(d.imaging)}<h3>فئات الأدوية (بلا جرعات)</h3>${li(d.meds)}<h3>إجراءات</h3>${li(d.procedures)}<h3>نصائح منزلية</h3>${li(d.selfcare)}
+    ${d.guide ? `<h3>الدليل الإرشادي</h3><p dir="ltr" style="text-align:left">${esc(d.guide)}</p>` : ""}
+    <label for="n-${esc(c.id)}">ملاحظتك (مطلوبة عند التعديل أو الرفض)</label><textarea id="n-${esc(c.id)}" maxlength="4000" placeholder="مثلًا: يُضاف عرض كذا، أو يُرفع الاستعجال إلى طوارئ، أو التحليل الأدق هو…">${esc(c.note || "")}</textarea>
+    <div class="acts"><button class="btn a-ok" data-s="approved">✓ معتمد</button><button class="btn a-edit" data-s="edit">✎ يحتاج تعديل</button><button class="btn a-rej" data-s="reject">✕ مرفوض</button></div>
+  </div></details>`;
+}
+function draw(p) {
+  const done = items.filter(x => x.status).length, pct = items.length ? Math.round(done * 100 / items.length) : 0;
+  const shown = items.filter(x => (filter === "all" || (filter === "none" ? !x.status : x.status === filter)) && (!q || x.name.includes(q) || (x.name_en || "").toLowerCase().includes(q.toLowerCase())));
+  const link = `${location.origin}${location.pathname}#k=${encodeURIComponent(KEY)}&t=${encodeURIComponent(store.get("t"))}`;
+  app.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><b>تقدّمك في ${esc(p.zone_name)}</b><span>${done} من ${items.length} (${pct}%)</span></div><div class="bar" style="margin:8px 0"><i style="width:${pct}%"></i></div>
+      <div class="seg" role="group" aria-label="تصفية">${[["none", "لم تُراجع"], ["all", "الكل"], ["approved", "معتمد"], ["edit", "يحتاج تعديل"], ["reject", "مرفوض"]].map(([k, l]) => `<button data-f="${k}" aria-pressed="${filter === k}">${l} (${k === "all" ? items.length : k === "none" ? items.length - done : items.filter(x => x.status === k).length})</button>`).join("")}</div>
+      <input id="q" type="search" placeholder="ابحث باسم المرض…" value="${esc(q)}" style="margin-top:10px">
+      <details style="margin-top:10px"><summary class="muted">رابط دخولك الشخصي (لفتح المراجعة من جهاز آخر)</summary><p class="copy">${esc(link)}</p><button class="btn ghost" id="cp">نسخ الرابط</button><p class="muted">لا تشاركه مع أحد؛ أي شخص يملكه يستطيع المراجعة باسمك.</p></details></div>
+    ${shown.length ? shown.map(condHtml).join("") : `<div class="card muted">${filter === "none" ? "أحسنت! راجعت كل حالات تخصصك. شكرًا جزيلًا لك." : "لا توجد حالات هنا."}</div>`}`;
+  app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filter = b.dataset.f; draw(p); });
+  $("#q").oninput = e => { q = e.target.value.trim(); const pos = e.target.selectionStart; draw(p); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
+  $("#cp").onclick = () => navigator.clipboard.writeText(link).then(() => toast("نُسخ الرابط"), () => toast("انسخ الرابط يدويًا"));
+  app.querySelectorAll(".acts button").forEach(b => b.onclick = async () => {
+    const box = b.closest(".cond"), id = box.dataset.id, note = box.querySelector("textarea").value;
+    box.querySelectorAll(".acts button").forEach(x => x.disabled = true);
+    try {
+      await rpc("submit_review", { p_token: store.get("t"), p_condition: id, p_status: b.dataset.s, p_note: note });
+      const it = items.find(x => x.id === id); it.status = b.dataset.s; it.note = note.trim() || null; p.done = items.filter(x => x.status).length;
+      toast("حُفظت مراجعتك، شكرًا"); draw(p);
+      const next = app.querySelector("details.cond"); if (next && filter === "none") { next.open = true; next.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    } catch (e) { toast(msg(e)); box.querySelectorAll(".acts button").forEach(x => x.disabled = false); }
+  });
+}
+
+/* ---------- لوحة المالك ---------- */
+async function admin() {
+  let d;
+  try { d = await rpc("admin_overview", { p_admin: ADMIN }); } catch (e) { app.innerHTML = `<div class="card err">${esc(msg(e))}</div>`; return; }
+  $("#who").textContent = "لوحة المالك";
+  const S = d.specialties || [], tot = S.reduce((a, s) => a + s.total, 0), rev = S.reduce((a, s) => a + s.reviewed, 0), apr = S.reduce((a, s) => a + s.approved, 0);
+  const zn = Object.fromEntries(S.map(s => [s.key, s.name]));
+  app.innerHTML = `<div class="card"><b>الإجمالي:</b> ${rev} من ${tot} حالة رُوجعت (${tot ? Math.round(rev * 100 / tot) : 0}%) · معتمدة ${apr} · أطباء مسجلون ${d.reviewers.length}
+    <div class="row" style="margin-top:10px"><button class="btn ghost" id="csv">تنزيل كل المراجعات (Excel/CSV)</button><button class="btn ghost" id="csvd">تنزيل بيانات الأطباء</button><button class="btn ghost" id="rf">تحديث</button></div></div>
+    <div class="card"><b>التقدم حسب التخصص</b><table><thead><tr><th>التخصص</th><th>أطباء</th><th>رُوجعت</th><th>معتمدة</th><th></th></tr></thead><tbody>${S.map(s => `<tr><td>${esc(s.name)}</td><td>${s.doctors}</td><td>${s.reviewed}/${s.total}</td><td>${s.approved}</td><td style="width:30%"><div class="bar"><i style="width:${s.total ? s.reviewed * 100 / s.total : 0}%"></i></div></td></tr>`).join("")}</tbody></table></div>
+    <div class="card"><b>الأطباء</b><table><thead><tr><th>الاسم</th><th>التخصص</th><th>راجع</th><th>استشارات</th><th>تواصل</th></tr></thead><tbody>${d.reviewers.map(r => `<tr><td>${esc(r.title || "")} ${esc(r.name)}<div class="muted">قيد ${esc(r.syndicate_no || "—")}</div></td><td>${esc(zn[r.zone] || r.zone)}</td><td>${r.done}</td><td>${r.consult ? "✓ " + esc(r.consult_note || "") : "—"}</td><td dir="ltr" style="text-align:left">${esc(r.phone || "")}<br>${esc(r.email || "")}</td></tr>`).join("") || `<tr><td colspan="5" class="muted">لم يسجّل أحد بعد</td></tr>`}</tbody></table></div>
+    <div class="card"><b>آخر المراجعات التي تحتاج إجراء</b><table><thead><tr><th>الحالة</th><th>الطبيب</th><th>القرار</th><th>الملاحظة</th></tr></thead><tbody>${d.reviews.filter(v => v.status !== "approved").slice(0, 200).map(v => `<tr><td>${esc(v.condition)}<div class="muted">${esc(zn[v.zone] || "")}</div></td><td>${esc(v.reviewer)}</td><td><span class="tag ${ST[v.status][1]}">${ST[v.status][0]}</span></td><td>${esc(v.note || "")}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">لا شيء بعد</td></tr>`}</tbody></table></div>`;
+  const dl = (name, rows) => { const csv = "﻿" + rows.map(r => r.map(x => `"${String(x ?? "").replace(/"/g, '""')}"`).join(",")).join("\n"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = name; a.click(); };
+  $("#csv").onclick = () => dl("mosel-reviews.csv", [["condition_id", "الحالة", "التخصص", "الطبيب", "القرار", "الملاحظة", "التاريخ"], ...d.reviews.map(v => [v.condition_id, v.condition, zn[v.zone], v.reviewer, ST[v.status][0], v.note, v.at])]);
+  $("#csvd").onclick = () => dl("mosel-doctors.csv", [["الاسم", "الدرجة", "التخصص", "رقم القيد", "الموبايل", "البريد", "راجع", "استشارات", "ملاحظة الاستشارات", "تاريخ التسجيل"], ...d.reviewers.map(r => [r.name, r.title, zn[r.zone], r.syndicate_no, r.phone, r.email, r.done, r.consult ? "نعم" : "لا", r.consult_note, r.created_at])]);
+  $("#rf").onclick = admin;
+}
+
+if (ADMIN) admin(); else if (store.get("t")) review(); else if (store.get("i")) register();
+else app.innerHTML = `<div class="card">افتح هذه الصفحة من رابط الدعوة الذي أُرسل إليك.</div>`;
+</script>
+</body>
+</html>
