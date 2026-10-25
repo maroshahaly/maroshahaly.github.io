@@ -95,15 +95,23 @@ async function register() {
       <label for="r-email">البريد الإلكتروني</label><input id="r-email" type="email" maxlength="120" dir="ltr" autocomplete="email">
       <label class="row" style="font-weight:600;margin-top:14px"><input type="checkbox" id="r-consult" style="width:auto"> أرغب في تقديم استشارات أونلاين عبر «موصل» لاحقًا</label>
       <div id="r-cbox" hidden><label for="r-cnote">مواعيدك المناسبة وسعر الاستشارة المقترح (اختياري)</label><input id="r-cnote" maxlength="500"></div>
+      <div id="r-terms" hidden class="card" style="background:var(--bg);margin-top:8px"><b>تعهد طبيب الاستشارات</b><ul class="muted" style="margin:6px 0">
+        <li>أرد على الاستشارات الواردة عبر «موصل» برقمها (يبدأ بحرف M) في الموعد الذي حددته.</li>
+        <li>لا أطلب من مرضى «موصل» التعامل معي مباشرة خارج التطبيق، ولا أحوّل متابعتهم لقنوات أخرى بغرض تجاوز المنصة، طوال مدة التعاقد و12 شهرًا بعدها.</li>
+        <li>أوافق على عمولة «موصل» المتفق عليها، وعلى مراجعة التقييمات والشكاوى، وعلى رد قيمة الاستشارة إذا لم تُقدَّم.</li>
+        <li>أحافظ على سرية بيانات المرضى ولا أستخدمها لأي غرض آخر.</li></ul>
+        <label class="row" style="font-weight:600"><input type="checkbox" id="r-agree" style="width:auto"> أوافق على هذا التعهد</label></div>
       <p class="muted">بياناتك تُستخدم فقط لتوثيق المراجعة الطبية والتواصل معك، ولا تُنشر إلا باسمك ودرجتك على الحالات التي اعتمدتها وبموافقتك.</p>
       <p id="r-err" class="err" role="alert"></p>
       <button class="btn" type="submit">ابدأ المراجعة</button>
     </form></div>`;
-  $("#r-consult").onchange = e => { $("#r-cbox").hidden = !e.target.checked; };
+  $("#r-consult").onchange = e => { $("#r-cbox").hidden = $("#r-terms").hidden = !e.target.checked; };
   $("#reg").onsubmit = async e => {
-    e.preventDefault(); const b = e.submitter; b.disabled = true; $("#r-err").textContent = "";
+    e.preventDefault(); const b = e.submitter; $("#r-err").textContent = "";
+    if ($("#r-consult").checked && !$("#r-agree").checked) { $("#r-err").textContent = "للانضمام للاستشارات وافق على التعهد، أو ألغِ اختيار الاستشارات."; return; }
+    b.disabled = true;
     try {
-      const tok = await rpc("register_reviewer", { p_invite: store.get("i") || "", p_name: $("#r-name").value, p_title: $("#r-title").value, p_syndicate: $("#r-syn").value, p_phone: $("#r-phone").value, p_email: $("#r-email").value, p_zone: $("#r-zone").value, p_consult: $("#r-consult").checked, p_consult_note: $("#r-cnote").value });
+      const tok = await rpc("register_reviewer", { p_invite: store.get("i") || "", p_name: $("#r-name").value, p_title: $("#r-title").value, p_syndicate: $("#r-syn").value, p_phone: $("#r-phone").value, p_email: $("#r-email").value, p_zone: $("#r-zone").value, p_consult: $("#r-consult").checked, p_consult_note: ($("#r-consult").checked ? "[وافق على التعهد " + new Date().toISOString().slice(0, 10) + "] " : "") + $("#r-cnote").value });
       store.set("t", tok); review(true);
     } catch (err) { $("#r-err").textContent = msg(err); b.disabled = false; }
   };
@@ -144,10 +152,18 @@ function draw(p) {
   app.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><b>تقدّمك في ${esc(p.zone_name)}</b><span>${done} من ${items.length} (${pct}%)</span></div><div class="bar" style="margin:8px 0"><i style="width:${pct}%"></i></div>
       <div class="seg" role="group" aria-label="تصفية">${[["none", "لم تُراجع"], ["all", "الكل"], ["approved", "معتمد"], ["edit", "يحتاج تعديل"], ["reject", "مرفوض"]].map(([k, l]) => `<button data-f="${k}" aria-pressed="${filter === k}">${l} (${k === "all" ? items.length : k === "none" ? items.length - done : items.filter(x => x.status === k).length})</button>`).join("")}</div>
       <input id="q" type="search" placeholder="ابحث باسم المرض…" value="${esc(q)}" style="margin-top:10px">
+      <details style="margin-top:10px"><summary class="muted">تواصل مع إدارة «موصل» (انضمام للاستشارات، مستحقات، مشكلة، اقتراح)</summary>
+        <select id="dk"><option value="doctor_join">الانضمام للاستشارات أو تعديل مواعيدي وسعري</option><option value="doctor_payment">مستحقاتي وتسوية الاستشارات</option><option value="complaint">شكوى من مريض أو موقف</option><option value="technical">مشكلة تقنية</option><option value="suggestion">اقتراح على المحتوى أو التطبيق</option></select>
+        <textarea id="dd" maxlength="3000" placeholder="اكتب رسالتك" style="margin-top:6px"></textarea><button class="btn ghost" id="ds" style="margin-top:6px">إرسال للإدارة</button></details>
       <details style="margin-top:10px"><summary class="muted">رابط دخولك الشخصي (لفتح المراجعة من جهاز آخر)</summary><p class="copy">${esc(link)}</p><button class="btn ghost" id="cp">نسخ الرابط</button><p class="muted">لا تشاركه مع أحد؛ أي شخص يملكه يستطيع المراجعة باسمك.</p></details></div>
     ${shown.length ? shown.map(condHtml).join("") : `<div class="card muted">${filter === "none" ? "أحسنت! راجعت كل حالات تخصصك. شكرًا جزيلًا لك." : "لا توجد حالات هنا."}</div>`}`;
   app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filter = b.dataset.f; draw(p); });
   $("#q").oninput = e => { q = e.target.value.trim(); const pos = e.target.selectionStart; draw(p); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
+  $("#ds").onclick = async () => {
+    const d = $("#dd").value.trim(); if (d.length < 5) return toast("اكتب رسالتك");
+    try { const r = await fetch(API.replace("/rest/v1/rpc/", "/functions/v1/support"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "ticket", role: "doctor", kind: $("#dk").value, name: p.name, details: d }) });
+      const j = await r.json(); if (!j.ticket) throw 0; $("#dd").value = ""; toast("وصلت رسالتك. رقمها " + j.ticket); } catch (e) { toast("تعذّر الإرسال"); }
+  };
   $("#cp").onclick = () => navigator.clipboard.writeText(link).then(() => toast("نُسخ الرابط"), () => toast("انسخ الرابط يدويًا"));
   app.querySelectorAll(".acts button").forEach(b => b.onclick = async () => {
     const box = b.closest(".cond"), id = box.dataset.id, note = box.querySelector("textarea").value;
@@ -164,19 +180,31 @@ function draw(p) {
 /* ---------- لوحة المالك ---------- */
 async function admin() {
   let d;
-  try { d = await rpc("admin_overview", { p_admin: ADMIN }); } catch (e) { app.innerHTML = `<div class="card err">${esc(msg(e))}</div>`; return; }
+  let sp = { tickets: [], consults: [] };
+  try { [d, sp] = await Promise.all([rpc("admin_overview", { p_admin: ADMIN }), rpc("admin_support", { p_admin: ADMIN })]); } catch (e) { app.innerHTML = `<div class="card err">${esc(msg(e))}</div>`; return; }
   $("#who").textContent = "لوحة المالك";
   const S = d.specialties || [], tot = S.reduce((a, s) => a + s.total, 0), rev = S.reduce((a, s) => a + s.reviewed, 0), apr = S.reduce((a, s) => a + s.approved, 0);
   const zn = Object.fromEntries(S.map(s => [s.key, s.name]));
-  app.innerHTML = `<div class="card"><b>الإجمالي:</b> ${rev} من ${tot} حالة رُوجعت (${tot ? Math.round(rev * 100 / tot) : 0}%) · معتمدة ${apr} · أطباء مسجلون ${d.reviewers.length}
+  app.innerHTML = `<div class="card">${sp.tickets.some(t => t.status === "open") ? `<p class="err">لديك ${sp.tickets.filter(t => t.status === "open").length} رسالة دعم جديدة ↓</p>` : ""}<b>الإجمالي:</b> ${rev} من ${tot} حالة رُوجعت (${tot ? Math.round(rev * 100 / tot) : 0}%) · معتمدة ${apr} · أطباء مسجلون ${d.reviewers.length}
     <div class="row" style="margin-top:10px"><button class="btn ghost" id="csv">تنزيل كل المراجعات (Excel/CSV)</button><button class="btn ghost" id="csvd">تنزيل بيانات الأطباء</button><button class="btn ghost" id="rf">تحديث</button></div></div>
     <div class="card"><b>التقدم حسب التخصص</b><table><thead><tr><th>التخصص</th><th>أطباء</th><th>رُوجعت</th><th>معتمدة</th><th></th></tr></thead><tbody>${S.map(s => `<tr><td>${esc(s.name)}</td><td>${s.doctors}</td><td>${s.reviewed}/${s.total}</td><td>${s.approved}</td><td style="width:30%"><div class="bar"><i style="width:${s.total ? s.reviewed * 100 / s.total : 0}%"></i></div></td></tr>`).join("")}</tbody></table></div>
     <div class="card"><b>الأطباء</b><table><thead><tr><th>الاسم</th><th>التخصص</th><th>راجع</th><th>استشارات</th><th>تواصل</th></tr></thead><tbody>${d.reviewers.map(r => `<tr><td>${esc(r.title || "")} ${esc(r.name)}<div class="muted">قيد ${esc(r.syndicate_no || "—")}</div></td><td>${esc(zn[r.zone] || r.zone)}</td><td>${r.done}</td><td>${r.consult ? esc(r.consult_note || "") + `<div class="row" style="margin-top:4px"><input data-wa="${esc(r.id)}" value="${esc(r.consult_whatsapp || r.phone || "")}" placeholder="واتساب" dir="ltr" style="width:130px;padding:4px 8px"><button class="btn ${r.consult_approved ? "ghost" : ""}" style="padding:4px 10px;font-size:13px" data-ap="${esc(r.id)}" data-v="${r.consult_approved ? 0 : 1}">${r.consult_approved ? "إيقاف" : "اعتماد للاستشارات"}</button></div>${r.consult_approved ? `<span class="tag t-approved">ظاهر للمرضى</span>` : ""}` : "—"}</td><td dir="ltr" style="text-align:left">${esc(r.phone || "")}<br>${esc(r.email || "")}</td></tr>`).join("") || `<tr><td colspan="5" class="muted">لم يسجّل أحد بعد</td></tr>`}</tbody></table></div>
+    <div class="card"><b>الاستشارات حسب الطبيب</b> <span class="muted">(كل استشارة تُسجَّل برقم عند إرسالها؛ قارن العدد بتقارير الطبيب لاكتشاف التعامل خارج المنصة)</span><table><thead><tr><th>الطبيب</th><th>الكل</th><th>آخر 30 يومًا</th><th>التقييم</th><th>شكاوى/استرداد</th></tr></thead><tbody>${sp.consults.map(c => `<tr><td>${esc(c.name)}<div class="muted">${esc(c.zone_name)}</div></td><td>${c.total}</td><td>${c.last30}</td><td>${c.avg_rating ?? "—"}</td><td>${c.complaints}</td></tr>`).join("") || `<tr><td colspan="5" class="muted">لا يوجد أطباء معتمدون للاستشارة بعد</td></tr>`}</tbody></table></div>
+    <div class="card"><b>الدعم: الشكاوى والتقييمات والاسترداد</b> <span class="muted">(${sp.tickets.filter(t => t.status === "open" || t.status === "in_progress").length} مفتوحة)</span>
+      <table><thead><tr><th>التذكرة</th><th>النوع</th><th>التفاصيل</th><th>الحالة</th></tr></thead><tbody>${sp.tickets.map(t => `<tr><td dir="ltr" style="text-align:left">${esc(t.ticket_no)}<div class="muted">${esc(String(t.created_at).slice(0, 16).replace("T", " "))}</div></td>
+        <td>${esc(({ rating: "تقييم", complaint: "شكوى", refund: "استرداد", technical: "مشكلة تقنية", suggestion: "اقتراح", doctor_join: "طبيب: استشارات", doctor_payment: "طبيب: مستحقات", other: "أخرى" })[t.kind] || t.kind)}<div class="muted">${t.role === "doctor" ? "من طبيب" : "من مريض"}</div>${t.rating ? `<div>${"★".repeat(t.rating)}${"☆".repeat(5 - t.rating)}</div>` : ""}</td>
+        <td>${esc(t.details)}${t.consult_code ? `<div class="muted">استشارة <span dir="ltr">${esc(t.consult_code)}</span> ${esc(t.doctor_name || "")}</div>` : ""}${t.name || t.phone ? `<div class="muted">${esc(t.name || "")} ${t.phone ? `<a href="https://wa.me/${esc(String(t.phone).replace(/\D/g, "").replace(/^0(?=1\d{9}$)/, "20"))}" target="_blank" rel="noopener" dir="ltr">${esc(t.phone)}</a>` : ""}</div>` : ""}</td>
+        <td><select data-tk="${t.id}">${[["open", "مفتوحة"], ["in_progress", "جارٍ العمل"], ["resolved", "تم الحل"], ["rejected", "مرفوضة"]].map(([k, l]) => `<option value="${k}" ${t.status === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+          <input data-tkn="${t.id}" value="${esc(t.admin_note || "")}" placeholder="ملاحظة داخلية" style="margin-top:4px;padding:4px 8px"></td></tr>`).join("") || `<tr><td colspan="4" class="muted">لا توجد رسائل</td></tr>`}</tbody></table></div>
     <div class="card"><b>آخر المراجعات التي تحتاج إجراء</b><table><thead><tr><th>الحالة</th><th>الطبيب</th><th>القرار</th><th>الملاحظة</th></tr></thead><tbody>${d.reviews.filter(v => v.status !== "approved").slice(0, 200).map(v => `<tr><td>${esc(v.condition)}<div class="muted">${esc(zn[v.zone] || "")}</div></td><td>${esc(v.reviewer)}</td><td><span class="tag ${ST[v.status][1]}">${ST[v.status][0]}</span></td><td>${esc(v.note || "")}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">لا شيء بعد</td></tr>`}</tbody></table></div>`;
   const dl = (name, rows) => { const csv = "﻿" + rows.map(r => r.map(x => `"${String(x ?? "").replace(/"/g, '""')}"`).join(",")).join("\n"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = name; a.click(); };
   $("#csv").onclick = () => dl("mosel-reviews.csv", [["condition_id", "الحالة", "التخصص", "الطبيب", "القرار", "الملاحظة", "التاريخ"], ...d.reviews.map(v => [v.condition_id, v.condition, zn[v.zone], v.reviewer, ST[v.status][0], v.note, v.at])]);
   $("#csvd").onclick = () => dl("mosel-doctors.csv", [["الاسم", "الدرجة", "التخصص", "رقم القيد", "الموبايل", "البريد", "راجع", "استشارات", "ملاحظة الاستشارات", "تاريخ التسجيل"], ...d.reviewers.map(r => [r.name, r.title, zn[r.zone], r.syndicate_no, r.phone, r.email, r.done, r.consult ? "نعم" : "لا", r.consult_note, r.created_at])]);
   $("#rf").onclick = admin;
+  app.querySelectorAll("[data-tkn]").forEach(i => i.onchange = () => app.querySelector(`[data-tk="${i.dataset.tkn}"]`).onchange());
+  app.querySelectorAll("[data-tk]").forEach(sel => sel.onchange = async () => {
+    try { await rpc("admin_ticket_update", { p_admin: ADMIN, p_id: +sel.dataset.tk, p_status: sel.value, p_note: app.querySelector(`[data-tkn="${sel.dataset.tk}"]`).value }); toast("حُفظ"); } catch (e) { toast(msg(e)); }
+  });
   app.querySelectorAll("[data-ap]").forEach(b => b.onclick = async () => {
     if (b.dataset.v === "1" && !confirm("تأكدت من رقم قيد الطبيب في النقابة؟ سيظهر اسمه للمرضى في «استشر طبيبًا».")) return;
     b.disabled = true;
