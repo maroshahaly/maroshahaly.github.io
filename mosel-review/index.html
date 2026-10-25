@@ -74,7 +74,7 @@ async function rpc(fn, args = {}) {
   return j;
 }
 const msg = e => ERR[e.message] || (e.message === "nokey" ? "افتح البرنامج من الرابط الكامل الذي أُرسل إليك." : "تعذّر الاتصال. تأكد من الإنترنت وحاول مرة أخرى.");
-const TRI = { emergency: "طوارئ فورًا", urgent: "خلال 24 ساعة", doctor: "مراجعة طبيب", home: "رعاية منزلية" };
+const TRI = { emergency: "طوارئ فورًا", urgent: "خلال 24 ساعة", doctor: "مراجعة طبيب", self: "رعاية منزلية ومتابعة" };
 const ST = { approved: ["معتمد", "t-approved"], edit: ["يحتاج تعديل", "t-edit"], reject: ["مرفوض", "t-reject"] };
 
 /* ---------- تسجيل الطبيب ---------- */
