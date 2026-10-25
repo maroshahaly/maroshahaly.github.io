@@ -123,7 +123,7 @@ async function review(first) {
   const t = store.get("t");
   try {
     const [p, list] = await Promise.all([rpc("my_profile", { p_token: t }), rpc("my_conditions", { p_token: t })]);
-    items = list; $("#who").textContent = `${p.title || ""} ${p.name} · ${p.zone_name}`;
+    items = list; await loadCons(); $("#who").textContent = `${p.title || ""} ${p.name} · ${p.zone_name}`;
     if (first) filter = "none";
     draw(p);
     if (first) toast("أهلًا بك، ابدأ بأول حالة");
@@ -145,11 +145,73 @@ function condHtml(c) {
     <div class="acts"><button class="btn a-ok" data-s="approved">✓ معتمد</button><button class="btn a-edit" data-s="edit">✎ يحتاج تعديل</button><button class="btn a-rej" data-s="reject">✕ مرفوض</button></div>
   </div></details>`;
 }
+/* ---------- استشارات الطبيب: رد كتابي فقط ---------- */
+const CHAT = API.replace("/rest/v1/rpc/", "/functions/v1/chat");
+let tab = "review", cons = null, cur = null, msgs = [], lastId = 0, pollT = 0, prof = null;
+async function chat(action, args = {}) {
+  const r = await fetch(CHAT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, role: "doctor", token: store.get("t"), ...args }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) { const e = new Error(j.error || "net"); throw e; } return j;
+}
+const CHAT_ERR = { blocked: "لم تُرسل الرسالة: يُمنع كتابة أرقام الهواتف أو الروابط أو أسماء وسائل التواصل أو العيادات داخل الاستشارة (التزامًا بتعهد الاستشارات). اكتب العلاج أو سؤالك فقط.", closed: "انتهت الاستشارة." };
+async function loadCons() { try { cons = (await chat("list")).items; } catch (e) { cons = cons || []; } }
+function tabsHtml() {
+  const unread = (cons || []).reduce((a, c) => a + (c.unread || 0), 0);
+  return `<div class="seg" style="margin-bottom:12px"><button data-tab="review" aria-pressed="${tab === "review"}">مراجعة الحالات</button><button data-tab="cons" aria-pressed="${tab === "cons"}">استشاراتي${unread ? ` (${unread} جديدة)` : ""}</button></div>`;
+}
+function bindTabs() { app.querySelectorAll("[data-tab]").forEach(b => b.onclick = async () => { tab = b.dataset.tab; cur = null; clearInterval(pollT); if (tab === "cons") await loadCons(); tab === "cons" ? drawCons() : draw(prof); }); }
+function drawCons() {
+  clearInterval(pollT);
+  if (cur) return drawChat();
+  app.innerHTML = tabsHtml() + `<div class="card"><b>الاستشارات الواردة</b><p class="muted">يرى المريض اسمك الأول ودرجتك فقط. الرد كتابةً فقط: العلاج والأسئلة عن التفاصيل. تُحجب تلقائيًا الأرقام والروابط ووسائل التواصل.</p></div>
+    ${(cons || []).length ? cons.map(c => `<button class="card" data-c="${esc(c.id)}" style="width:100%;text-align:start;font:inherit;color:inherit;cursor:pointer;display:block">
+      <div class="row" style="justify-content:space-between"><b>${esc(c.patient)}</b>${c.unread ? `<span class="tag t-reject">${c.unread} جديدة</span>` : `<span class="tag ${c.status === "open" ? "t-approved" : "t-none"}">${c.status === "open" ? "مفتوحة" : "منتهية"}</span>`}</div>
+      <div class="muted" dir="ltr" style="text-align:right">${esc(c.code)} · ${esc(String(c.last_msg_at).slice(0, 16).replace("T", " "))}</div></button>`).join("") : `<div class="card muted">لا توجد استشارات بعد. تظهر هنا فور أن يرسل لك مريض.</div>`}
+    <button class="btn ghost" id="rl">تحديث</button>`;
+  bindTabs();
+  app.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { cur = b.dataset.c; msgs = []; lastId = 0; drawChat(); pull(true); });
+  $("#rl").onclick = async () => { await loadCons(); drawCons(); };
+  pollT = setInterval(async () => { if (tab === "cons" && !cur && !document.hidden) { await loadCons(); drawCons(); } }, 20000);
+}
+let info = {};
+function msgHtml(m) {
+  const mine = m.sender === "doctor", sys = m.sender === "system";
+  const body = m.kind === "image" ? `<img src="${esc(m.url || "")}" alt="صورة من المريض" style="max-width:100%;border-radius:10px">` : m.kind === "video" ? `<video src="${esc(m.url || "")}" controls playsinline style="max-width:100%;border-radius:10px"></video>`
+    : m.kind === "voice" ? `<audio src="${esc(m.url || "")}" controls style="max-width:100%"></audio>` : `<div style="white-space:pre-wrap">${esc(m.body || "")}</div>`;
+  return `<div style="align-self:${sys ? "center" : mine ? "flex-end" : "flex-start"};max-width:85%;background:${sys ? "transparent" : mine ? "var(--okb)" : "var(--bg)"};border:1px solid var(--line);border-radius:14px;padding:8px 12px">${body}<div class="muted" style="font-size:11px">${esc(String(m.at).slice(0, 16).replace("T", " "))}</div></div>`;
+}
+function drawChat() {
+  const open = info.status !== "closed";
+  app.innerHTML = tabsHtml() + `<div class="card"><div class="row" style="justify-content:space-between"><b>${esc(info.patient || "…")}</b><span class="muted" dir="ltr">${esc(info.code || "")}</span></div>
+      ${info.summary ? `<details style="margin-top:6px"><summary class="muted">بيانات المريض</summary><div style="white-space:pre-wrap">${esc(info.summary)}</div></details>` : ""}</div>
+    <div id="mb" style="display:flex;flex-direction:column;gap:8px;height:min(55vh,520px);overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px">${msgs.map(msgHtml).join("") || `<p class="muted">…</p>`}</div>
+    ${open ? `<textarea id="mt" maxlength="3000" placeholder="اكتب العلاج أو سؤالك عن التفاصيل…" style="margin-top:8px"></textarea>
+      <div class="row" style="margin-top:6px"><button class="btn" id="ms" style="flex:1">إرسال</button><button class="btn ghost" id="mc">إنهاء الاستشارة</button></div>
+      <p class="muted">لا يمكن إرسال صور أو ملفات أو أرقام هواتف أو روابط. للحالات الطارئة وجّه المريض للاتصال بالإسعاف 123 أو التوجه لأقرب طوارئ.</p>` : `<p class="muted">انتهت الاستشارة.</p>`}
+    <button class="btn ghost" id="bk" style="margin-top:6px">رجوع لكل الاستشارات</button>`;
+  bindTabs();
+  const mb = $("#mb"); mb.scrollTop = mb.scrollHeight;
+  $("#bk").onclick = async () => { cur = null; await loadCons(); drawCons(); };
+  if (open) {
+    $("#ms").onclick = async () => { const t = $("#mt"), text = t.value.trim(); if (!text) return; t.disabled = true;
+      try { await chat("send", { id: cur, text }); t.value = ""; await pull(); } catch (e) { toast(CHAT_ERR[e.message] || "تعذّر الإرسال"); } t.disabled = false; };
+    $("#mc").onclick = async () => { if (!confirm("إنهاء الاستشارة؟")) return; try { await chat("close", { id: cur }); msgs = []; lastId = 0; await pull(true); } catch (e) { toast("تعذّر"); } };
+  }
+  clearInterval(pollT); pollT = setInterval(() => { if (cur && !document.hidden) pull(); }, 8000);
+}
+async function pull(first) {
+  try {
+    const j = await chat("messages", { id: cur, after: lastId });
+    info = { status: j.status, code: j.code, patient: j.patient, summary: j.summary };
+    if (j.items.length || first) { const keepText = $("#mt") ? $("#mt").value : ""; msgs.push(...j.items); lastId = msgs.length ? msgs[msgs.length - 1].id : 0; drawChat(); if ($("#mt")) $("#mt").value = keepText; }
+  } catch (e) { toast("تعذّر تحميل المحادثة"); }
+}
+
 function draw(p) {
+  prof = p;
   const done = items.filter(x => x.status).length, pct = items.length ? Math.round(done * 100 / items.length) : 0;
   const shown = items.filter(x => (filter === "all" || (filter === "none" ? !x.status : x.status === filter)) && (!q || x.name.includes(q) || (x.name_en || "").toLowerCase().includes(q.toLowerCase())));
   const link = `${location.origin}${location.pathname}#k=${encodeURIComponent(KEY)}&t=${encodeURIComponent(store.get("t"))}`;
-  app.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><b>تقدّمك في ${esc(p.zone_name)}</b><span>${done} من ${items.length} (${pct}%)</span></div><div class="bar" style="margin:8px 0"><i style="width:${pct}%"></i></div>
+  app.innerHTML = (cons && cons.length || p.consult ? tabsHtml() : "") + `<div class="card"><div class="row" style="justify-content:space-between"><b>تقدّمك في ${esc(p.zone_name)}</b><span>${done} من ${items.length} (${pct}%)</span></div><div class="bar" style="margin:8px 0"><i style="width:${pct}%"></i></div>
       <div class="seg" role="group" aria-label="تصفية">${[["none", "لم تُراجع"], ["all", "الكل"], ["approved", "معتمد"], ["edit", "يحتاج تعديل"], ["reject", "مرفوض"]].map(([k, l]) => `<button data-f="${k}" aria-pressed="${filter === k}">${l} (${k === "all" ? items.length : k === "none" ? items.length - done : items.filter(x => x.status === k).length})</button>`).join("")}</div>
       <input id="q" type="search" placeholder="ابحث باسم المرض…" value="${esc(q)}" style="margin-top:10px">
       <details style="margin-top:10px"><summary class="muted">تواصل مع إدارة «موصل» (انضمام للاستشارات، مستحقات، مشكلة، اقتراح)</summary>
@@ -157,6 +219,7 @@ function draw(p) {
         <textarea id="dd" maxlength="3000" placeholder="اكتب رسالتك" style="margin-top:6px"></textarea><button class="btn ghost" id="ds" style="margin-top:6px">إرسال للإدارة</button></details>
       <details style="margin-top:10px"><summary class="muted">رابط دخولك الشخصي (لفتح المراجعة من جهاز آخر)</summary><p class="copy">${esc(link)}</p><button class="btn ghost" id="cp">نسخ الرابط</button><p class="muted">لا تشاركه مع أحد؛ أي شخص يملكه يستطيع المراجعة باسمك.</p></details></div>
     ${shown.length ? shown.map(condHtml).join("") : `<div class="card muted">${filter === "none" ? "أحسنت! راجعت كل حالات تخصصك. شكرًا جزيلًا لك." : "لا توجد حالات هنا."}</div>`}`;
+  bindTabs();
   app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filter = b.dataset.f; draw(p); });
   $("#q").oninput = e => { q = e.target.value.trim(); const pos = e.target.selectionStart; draw(p); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
   $("#ds").onclick = async () => {
