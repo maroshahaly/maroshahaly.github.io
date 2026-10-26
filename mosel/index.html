@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="version" content="4.5.0">
+<meta name="version" content="4.6.0">
 <!-- © 2026 Maro Shahaly — موصل. جميع الحقوق محفوظة. b3ce3f71c74044ccdba3670f -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -674,6 +674,23 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 .consult .code{font-family:ui-monospace,Menlo,monospace;letter-spacing:1px}
 .consult .err{color:var(--danger-ink);font-weight:600}
 .consult input:not([type=checkbox]){width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--gold-line,var(--line-2));border-radius:var(--r);background:var(--surface);color:var(--ink);font:inherit;font-size:15px}
+.cmp-list{display:grid;gap:10px;margin:14px 0}
+.cmp{display:flex;align-items:center;gap:12px;text-align:start;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;font:inherit;color:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .15s, transform .15s}
+.cmp:hover,.cmp:focus-visible{border-color:var(--brand-500);transform:translateY(-1px)}
+.cmp .zi{flex:none;width:44px;height:44px;border-radius:12px;background:var(--brand-50);display:grid;place-items:center}
+.cmp .zi svg{width:24px;height:24px;stroke:var(--brand);fill:none}
+.cmp-t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cmp-t b{font-size:16px}
+.cmp-z{align-self:flex-start;margin-top:4px;font-size:12px;font-weight:600;color:var(--brand-ink);background:var(--brand-50);border-radius:99px;padding:1px 10px}
+.cmp .chev{flex:none;width:18px;height:18px;opacity:.5}
+.sections details.near{margin-top:14px}
+.sections details.near .near-organs{margin:8px 0}
+.layer-ctl{margin:10px 0 4px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.layer-ctl input[type=range]{width:100%;accent-color:var(--brand);direction:ltr;transform:scaleX(-1)}
+.layer-ticks{display:flex;justify-content:space-between;gap:2px;margin-top:4px}
+.layer-ticks button{flex:1;font:inherit;font-size:11.5px;padding:4px 0;border:0;background:none;color:var(--muted-ink,#5b6f6b);cursor:pointer;border-radius:8px;white-space:nowrap}
+.layer-ticks button[aria-pressed="true"]{color:var(--brand-ink);font-weight:700;background:var(--brand-50)}
+#b3d-ana-note{margin:6px 0 0;text-align:center}
 </style>
 </head>
 <body>
@@ -689,6 +706,6 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px">يحتاج التطبيق إلى تفعيل JavaScript.</p></noscript>
 <script src="body3d.js"></script>
-<script src="loader.js" integrity="sha384-o+K1TQKInj8/NjwD6xBd5IQkVe9Y4qt2fs/rhsRd9GnWmpW1VwHtgSIWe/v7RGDH"></script>
+<script src="loader.js" integrity="sha384-DWEOOxd9oPilrt+yBtDIoAejSPQtLOfJp7l3VQbC8/YLiZgI6naJ7wpwyCxA1w+Y"></script>
 </body>
 </html>
