@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="version" content="4.9.0">
+<meta name="version" content="4.9.1">
 <!-- © 2026 Maro Shahaly — موصل. جميع الحقوق محفوظة. b3ce3f71c74044ccdba3670f -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -180,7 +180,8 @@ html[dir="ltr"] .chev, html[dir="ltr"] .flip-x svg{transform:scaleX(-1);}
 .g-img{width:100%; max-height:260px; object-fit:contain; background:#fff; border-radius:12px; border:1px solid var(--line); margin:6px 0;}
 .hormone{border-inline-start:3px solid var(--gold); padding:6px 10px; margin:8px 0; background:var(--surface-2); border-radius:8px;}
 .hormone p{margin:4px 0; font-size:14px; line-height:1.8;} .hormone .code{font-weight:600; font-size:12px; color:var(--ink-3); direction:ltr; unicode-bidi:isolate;}
-.hormone .hi span, .hormone .lo span, .hormone .ts span{font-weight:700;} .hormone .hi span{color:var(--warn-ink);} .hormone .lo span{color:var(--info-ink);} .hormone .ts span{color:var(--ok-ink);}
+.hormone .hi span, .hormone .lo span, .hormone .ts span, .hormone .rl span, .hormone .wn span, .hormone .up span, .hormone .dn span{font-weight:700;} .hormone .rl span{color:var(--brand-ink);} .hormone .wn span{color:var(--brand-ink);} .hormone .up span{color:var(--ok-ink);} .hormone .dn span{color:var(--info-ink);}
+summary.hormone, .hormone>summary{cursor:pointer;list-style:none;position:relative;padding-inline-end:22px} .hormone>summary::-webkit-details-marker{display:none} .hormone>summary::after{content:'+';position:absolute;inset-inline-end:2px;top:2px;font-weight:700;color:var(--brand-ink);font-size:18px} .hormone[open]>summary::after{content:'−'} .hormone[open]{background:var(--surface)} .hormone[open]>p{padding-top:2px;border-top:1px dashed var(--line)} .hormone .hi span{color:var(--warn-ink);} .hormone .lo span{color:var(--info-ink);} .hormone .ts span{color:var(--ok-ink);}
 .g-conds{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:8px;}
 .chip-link{border:1px solid var(--line-2); background:var(--surface); border-radius:999px; padding:5px 10px; font:inherit; font-size:13px; cursor:pointer; color:var(--brand-ink);}
 .why{list-style:none; margin:0; padding:0; display:grid; gap:10px;}
@@ -728,6 +729,6 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px">يحتاج التطبيق إلى تفعيل JavaScript.</p></noscript>
 <script src="body3d.js"></script>
-<script src="loader.js" integrity="sha384-qrabSAfFmlfO/wzlXHz7LsTclIfRm4AqfPunPM3jHy840R7FUdHEtFp/5wZgoAER"></script>
+<script src="loader.js" integrity="sha384-DVxEybxhtDWa1cg3OScDDF3XAlZ/ja0LJTsm8TWMFzWtVXO0viyUPrRRd/dBu4ju"></script>
 </body>
 </html>
