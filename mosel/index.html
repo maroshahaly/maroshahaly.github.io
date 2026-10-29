@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="version" content="4.9.3">
+<meta name="version" content="4.9.4">
 <!-- © 2026 Maro Shahaly — موصل. جميع الحقوق محفوظة. b3ce3f71c74044ccdba3670f -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -329,6 +329,11 @@ summary.hormone, .hormone>summary{cursor:pointer;list-style:none;position:relati
 /* ---------- Symptoms ---------- */
 .sym{display:flex; align-items:center; gap:12px; width:100%; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r); padding:13px 14px; margin-bottom:8px; cursor:pointer; text-align:right; transition:border-color .15s, background .15s;}
 .sym:hover{border-color:var(--line-2);}
+.med-full{margin:6px 0 10px; border:1px dashed var(--line-2); border-radius:12px; padding:0 12px; background:var(--surface);}
+.med-full>summary{cursor:pointer; padding:10px 0; font-size:13.5px; color:var(--ink-2); display:flex; gap:6px; align-items:center; list-style:none;}
+.med-full>summary::-webkit-details-marker{display:none;}
+.med-full>summary svg{width:16px; height:16px;}
+.med-full p{font-size:14px; color:var(--ink-2); margin:0 0 10px;}
 .sym-q{width:100%; margin:4px 0 10px; padding:12px 14px; border:1.5px solid var(--line); border-radius:var(--r); background:var(--surface); font:inherit; color:var(--ink);}
 .sym[hidden], .sym-group[hidden]{display:none !important;}
 .sg-meta .rf{color:var(--danger-ink); background:var(--danger-bg); border-radius:99px; padding:1px 8px; font-size:11px; font-weight:700;}
@@ -745,6 +750,6 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px">يحتاج التطبيق إلى تفعيل JavaScript.</p></noscript>
 <script src="body3d.js"></script>
-<script src="loader.js" integrity="sha384-ao394hpAI7BdzEB/jNJa4MsVeV+TYLw+d/5pthsWpeVUSQqaZLQJJ9WOaVjLsxD7"></script>
+<script src="loader.js" integrity="sha384-083MPMzKtDb61OlhBJhjN6+YYCobFeUSB3UdKtZqKyuFBZ+VvskjkyvTEwCiNP5Y"></script>
 </body>
 </html>
