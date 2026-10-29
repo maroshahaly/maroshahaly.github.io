@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="version" content="4.9.6">
+<meta name="version" content="4.9.7">
 <!-- © 2026 Maro Shahaly — موصل. جميع الحقوق محفوظة. b3ce3f71c74044ccdba3670f -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -185,6 +185,9 @@ html[dir="ltr"] .chev, html[dir="ltr"] .flip-x svg{transform:scaleX(-1);}
 .hormone .hi span, .hormone .lo span, .hormone .ts span, .hormone .rl span, .hormone .wn span, .hormone .up span, .hormone .dn span{font-weight:700;} .hormone .rl span{color:var(--brand-ink);} .hormone .wn span{color:var(--brand-ink);} .hormone .up span{color:var(--ok-ink);} .hormone .dn span{color:var(--info-ink);}
 summary.hormone, .hormone>summary{cursor:pointer;list-style:none;position:relative;padding-inline-end:22px} .hormone>summary::-webkit-details-marker{display:none} .hormone>summary::after{content:'+';position:absolute;inset-inline-end:2px;top:2px;font-weight:700;color:var(--brand-ink);font-size:18px} .hormone[open]>summary::after{content:'−'} .hormone[open]{background:var(--surface)} .hormone[open]>p{padding-top:2px;border-top:1px dashed var(--line)} .hormone .hi span{color:var(--warn-ink);} .hormone .lo span{color:var(--info-ink);} .hormone .ts span{color:var(--ok-ink);}
 .g-conds{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:8px;}
+.vit-kind{margin:18px 0 2px;} .vit-h{font-size:15px; margin:12px 0 6px; color:var(--brand-ink); display:flex; gap:6px; align-items:center;} .vit-h.lo{color:var(--warn-ink);} .vit-h svg{width:18px; height:18px; flex:0 0 auto;}
+.vit-organs{display:grid; gap:6px;} .vit-organs div{background:var(--surface-2); border-radius:8px; padding:8px 10px; font-size:14px; line-height:1.7; display:flex; flex-direction:column;} .vit-organs b{color:var(--brand-ink);}
+.vit-list{margin:0; padding-inline-start:20px; font-size:14px; line-height:1.8;}
 .chip-link{border:1px solid var(--line-2); background:var(--surface); border-radius:999px; padding:5px 10px; font:inherit; font-size:13px; cursor:pointer; color:var(--brand-ink);}
 .why{list-style:none; margin:0; padding:0; display:grid; gap:10px;}
 .why li{display:flex; gap:12px; align-items:flex-start; padding:12px; border:1px solid var(--gold-line); border-radius:var(--r); background:var(--grad-card, var(--surface));}
@@ -750,6 +753,6 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px">يحتاج التطبيق إلى تفعيل JavaScript.</p></noscript>
 <script src="body3d.js"></script>
-<script src="loader.js" integrity="sha384-OrQ5RnzdmqLon97RRZRGOt5ppjBHZyMT19gB8nBBSny2NYufpmcfUz/Ns6Amr2WP"></script>
+<script src="loader.js" integrity="sha384-GojgNhzpHtLoOO27TIXZZBJca6/soqEjAn3L+qlvI8jk+hBveumYeUe52wNdz1KK"></script>
 </body>
 </html>
