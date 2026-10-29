@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="version" content="4.9.2">
+<meta name="version" content="4.9.3">
 <!-- © 2026 Maro Shahaly — موصل. جميع الحقوق محفوظة. b3ce3f71c74044ccdba3670f -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -178,6 +178,7 @@ html[dir="ltr"] .chev, html[dir="ltr"] .flip-x svg{transform:scaleX(-1);}
 .gland summary b{font-size:16px; color:var(--brand-ink);}
 .gland[open]{padding-bottom:12px;}
 .g-where{display:flex; gap:6px; align-items:flex-start; font-size:14px; color:var(--ink-2);} .g-where svg{width:16px; height:16px; flex:0 0 16px; margin-top:4px;}
+.glands p svg, .lead svg, p.muted svg{width:16px; height:16px; vertical-align:-3px; flex:0 0 16px;}
 .g-img{width:100%; max-height:260px; object-fit:contain; background:#fff; border-radius:12px; border:1px solid var(--line); margin:6px 0;}
 .hormone{border-inline-start:3px solid var(--gold); padding:6px 10px; margin:8px 0; background:var(--surface-2); border-radius:8px;}
 .hormone p{margin:4px 0; font-size:14px; line-height:1.8;} .hormone .code{font-weight:600; font-size:12px; color:var(--ink-3); direction:ltr; unicode-bidi:isolate;}
@@ -328,6 +329,20 @@ summary.hormone, .hormone>summary{cursor:pointer;list-style:none;position:relati
 /* ---------- Symptoms ---------- */
 .sym{display:flex; align-items:center; gap:12px; width:100%; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r); padding:13px 14px; margin-bottom:8px; cursor:pointer; text-align:right; transition:border-color .15s, background .15s;}
 .sym:hover{border-color:var(--line-2);}
+.sym-q{width:100%; margin:4px 0 10px; padding:12px 14px; border:1.5px solid var(--line); border-radius:var(--r); background:var(--surface); font:inherit; color:var(--ink);}
+.sym[hidden], .sym-group[hidden]{display:none !important;}
+.sg-meta .rf{color:var(--danger-ink); background:var(--danger-bg); border-radius:99px; padding:1px 8px; font-size:11px; font-weight:700;}
+.sym-hint{display:flex; gap:6px; align-items:flex-start;}
+.sym-group{border:1px solid var(--line); border-radius:var(--r); background:var(--surface); margin-bottom:10px; overflow:hidden;}
+.sym-group>summary{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:14px; cursor:pointer; list-style:none; font-size:15px;}
+.sym-group>summary::-webkit-details-marker{display:none;}
+.sym-group>summary::after{content:"‹"; font-size:20px; color:var(--ink-3); transition:transform .2s; margin-inline-start:4px;}
+.sym-group[open]>summary::after{transform:rotate(-90deg);}
+.sym-group[open]>summary{border-bottom:1px solid var(--line); background:var(--surface-2);}
+.sym-group .sym{margin:8px 10px; width:calc(100% - 20px);}
+.sg-meta{display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; margin-inline-start:auto;}
+.sg-n{background:var(--brand-50); color:var(--brand-500); border:1px solid var(--brand-500); border-radius:99px; padding:1px 8px; font-size:12px; font-weight:700;}
+
 .sym[aria-checked="true"]{border-color:var(--brand-500); background:var(--brand-50);}
 .box{width:22px; height:22px; border-radius:7px; border:2px solid var(--line-2); flex:0 0 auto; display:grid; place-items:center; transition:.15s; background:var(--surface);}
 .box svg{width:14px; height:14px; color:#fff; opacity:0;}
@@ -730,6 +745,6 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px">يحتاج التطبيق إلى تفعيل JavaScript.</p></noscript>
 <script src="body3d.js"></script>
-<script src="loader.js" integrity="sha384-yFm5EGEAyOpNy++gqltCAQchokPTUOuoE5l3A85BcxUJomiF8Cpn0BgH+1mR5uCy"></script>
+<script src="loader.js" integrity="sha384-ao394hpAI7BdzEB/jNJa4MsVeV+TYLw+d/5pthsWpeVUSQqaZLQJJ9WOaVjLsxD7"></script>
 </body>
 </html>
