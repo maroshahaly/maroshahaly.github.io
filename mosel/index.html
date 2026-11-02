@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="version" content="4.9.13">
+<meta name="version" content="4.9.14">
 <!-- © 2026 Maro Shahaly — موصل. جميع الحقوق محفوظة. b3ce3f71c74044ccdba3670f -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -142,6 +142,11 @@ h1:focus, h2:focus{outline:none;}
 .more-ways>summary{cursor:pointer; padding:14px 2px; display:flex; gap:10px; align-items:center; list-style:none;} .more-ways>summary::-webkit-details-marker{display:none}
 .more-ways>summary>svg:first-child{width:22px;height:22px;color:var(--brand-ink);flex:0 0 auto} .more-ways>summary>span{flex:1;display:flex;flex-direction:column} .more-ways>summary>span>span{font-size:12px;color:var(--ink-3)}
 .more-ways>summary .chev{width:18px;height:18px;color:var(--ink-3);transition:transform .2s} .more-ways[open]>summary .chev{transform:rotate(180deg)} .more-ways[open]{padding-bottom:12px}
+.more-ways .card, .more-ways .search{margin:10px 0}
+.more-ways .quick{margin:8px 0}
+.quick.consult-big{padding:22px 16px; min-height:104px; border:2px solid var(--brand-500); background:var(--brand-50); margin:14px 0; box-shadow:var(--shadow-2)}
+.quick.consult-big .t b{font-size:18px; color:var(--brand-ink)} .quick.consult-big .t span{font-size:14px; color:var(--ink-2)}
+.quick.consult-big .qi{width:56px; height:56px; background:var(--brand); color:var(--on-brand)} .quick.consult-big .qi svg{width:28px; height:28px}
 .reg-pick{margin-top:10px; border:1px solid var(--line); border-radius:var(--r); padding:0 12px; background:var(--surface);}
 .reg-pick summary{cursor:pointer; padding:12px 2px; font-weight:700; color:var(--brand-ink); display:flex; gap:8px; align-items:center; list-style:none;}
 .reg-pick summary::-webkit-details-marker{display:none;}
@@ -768,6 +773,6 @@ body{background:var(--pattern) 0 0/240px 240px, var(--grad-bg) fixed; background
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px">يحتاج التطبيق إلى تفعيل JavaScript.</p></noscript>
 <script src="body3d.js"></script>
-<script src="loader.js" integrity="sha384-MDB1rUzUCXGw5HsTmDIJ/hZ2apfu2pmtpWomSMog0wAzFvxgDyxvn4DkYCVPg51U"></script>
+<script src="loader.js" integrity="sha384-nq89140iootb00oVyKvMf29ePG2Y1AFi4EZHvolAM7Ilg9zzD9a4aRWwtd+Ewul1"></script>
 </body>
 </html>
